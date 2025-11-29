@@ -199,9 +199,7 @@ class Eagle extends ImageShape {
     }
 
     newPos() {
-        if (!this.isDead) {
-            super.newPos();
-        }
+        super.newPos();
 
         if (this.deadElapsed == 3) {
             var explode = new Explosion(0, 0, 480, 480, 200);
@@ -225,6 +223,9 @@ class Eagle extends ImageShape {
     passOut() {
         var frame = this.parent.frameNo;
 
+        this.speedY = 0;
+        this.speedX = 0;
+        
         this.valid = false;
         this.deadSinceFrame = frame;
     }

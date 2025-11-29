@@ -474,7 +474,7 @@ class GameOverState extends GameState {
             this._drawAddCloud();
         }
 
-        if (frame == 100) {
+        if (frame == 150) {
             mainGame.canvas.addEventListener('click', GameOverState._onMouseClick);
         }
     }

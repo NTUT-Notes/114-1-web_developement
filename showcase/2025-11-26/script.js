@@ -42,7 +42,7 @@ class IntroState extends GameState {
         this.title = new GameTitle(135, 500);
 
         this.startGameTitle = new TextBox({
-            x: 85, 
+            x: 135, 
             y: 500, 
             color: "white", 
             text: "< Click to start >"

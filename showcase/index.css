@@ -1,4 +1,4 @@
-/* No border for iframe */
+/* No border for iframe and shrink wrap */
 iframe {
     height: 0px;
     width: 100%;
@@ -51,3 +51,4 @@ button {
     min-height: 30px;
     min-width: 50px;
 }
+

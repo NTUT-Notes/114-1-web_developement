@@ -100,7 +100,7 @@ function addObstacle() {
   var xPos = 480 * Math.random();
   var yPos = 480 * Math.random();
 
-  imageGame.addCompoinent(new Obstacle(xPos, yPos, width, height, "red"));
+  imageGame.addComponent(new Obstacle(xPos, yPos, width, height, "red"));
 }
 
 function onImageGameStart() {
@@ -118,7 +118,7 @@ function onImageGameStart() {
 var imageGame = new GameController("canvas", 10, [], onImageGameStart)
 
 imageGame.canvas.addEventListener('click', function (e) {
-  imageGame.addCompoinent(new Obstacle(e.pageX-20, e.pageY-70, 15, 10, "blue"));
+  imageGame.addComponent(new Obstacle(e.pageX-20, e.pageY-70, 15, 10, "blue"));
 })
 
 function onDragAndDropStart() {

@@ -11,17 +11,27 @@ class Component {
     this.gravity = 0;
     this.gravitySpeed = 0;
 
+    this.children = [];
+
     if (this.constructor === Component) {
       throw new Error("Cannot instantiate abstract class AbstractShape directly.");
     }
   }
 
   start() {
+    var length = this.children.length;
     
+    for (var i=0; i<length; i++) {
+      this.children[i].parent = this.parent;
+    }
   }
 
-  draw(frame, ctx) {
-    throw new Error("Method 'draw()' must be implemented by subclasses.");
+  draw() {
+    var length = this.children.length;
+
+    for (var i=0; i<length; i++) {
+      this.children[i].draw();
+    }
   }
 
   newPos() {
@@ -29,6 +39,20 @@ class Component {
 
     this.x += this.speedX;
     this.y += this.speedY + this.gravitySpeed;
+
+    var length = this.children.length;
+
+    for (var i=0; i<length; i++) {
+      this.children[i].speedX += this.speedX;
+      this.children[i].speedY += this.speedY;
+      this.children[i].gravitySpeed += this.gravitySpeed;
+
+      this.children[i].newPos();
+
+      this.children[i].speedX -= this.speedX;
+      this.children[i].speedY -= this.speedY;
+      this.children[i].gravitySpeed -= this.gravitySpeed;
+    }
   }
 
   checkHitBound() {
@@ -54,6 +78,29 @@ class Component {
     return Bound.No;
   }
 
+  checkVisible() {
+    var maxHeight = this.parent.canvas.height;
+    var maxWidth = this.parent.canvas.width;
+
+    if (this.x + this.width < 0) {
+      return Bound.Left;
+    }
+
+    if (this.x > maxWidth) {
+      return Bound.Right;
+    }
+
+    if (this.y + this.height < 0) {
+      return Bound.Top;
+    }
+
+    if (this.y > maxHeight) {
+      return Bound.Bottom;
+    }
+
+    return Bound.No;
+  }
+
   crashWith(object) {
     var thisXStart = this.x;
     var thisXEnd = this.x + this.width;
@@ -68,7 +115,6 @@ class Component {
     var thatYEnd = object.y + object.height;
 
     // 1. A 在 B 的右邊
-
     if (thisXStart > thatXEnd) {
       return false;
     }
@@ -90,6 +136,33 @@ class Component {
 
     return true;
   }
+
+  isDisposed() {
+    return false;
+  }
+}
+
+class TextBox extends Component {
+  constructor({x, y, text, color, font="PixelCode", size=24}) {
+    super(x, y, 0, 0);
+
+    this.size = size;
+    this.font = font;
+    this.text = text;
+    this.color = color;
+  }
+
+  start() {
+    super.start();
+  }
+
+  draw() {    
+    var ctx = this.parent.canvas.getContext("2d");
+
+    ctx.fillStyle = this.color;
+    ctx.font = this.size + "px " + this.font;
+    ctx.fillText(this.text, this.x, this.y);
+  }
 }
 
 class Cube extends Component {
@@ -105,7 +178,6 @@ class Cube extends Component {
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
-
 }
 
 class LShape extends Component {
@@ -116,7 +188,6 @@ class LShape extends Component {
 
   draw() {
     var ctx = this.parent.canvas.getContext("2d");
-    var frame = this.parent.frameNo;
 
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width/2, this.height);
@@ -139,8 +210,7 @@ class ImageShape extends Component {
 
   draw() {
     var ctx = this.parent.canvas.getContext("2d");
-    var frame = this.parent.frameNo;
-
+    
     ctx.drawImage(
       this.image, 
       this.x, 
@@ -148,11 +218,11 @@ class ImageShape extends Component {
       this.width, 
       this.height
     );
+
+    super.draw()
   }
 
 }
-
-
 
 class HandGame extends Component {
   constructor(x, y, width, height, type) {
@@ -253,71 +323,100 @@ class HandGame extends Component {
 }
 
 class GameController {
-  constructor(name, framerate, components, onStart) {
-    this.canvas = document.createElement(name);
-    this.framerate = framerate;
-    this.components = components;
-    this.frameNo = 0;
-
-    this.onStart = onStart;
-  }
-
-  init(id, width, height) {
-    this.canvas.width = width == undefined ? 480 : width;
-    this.canvas.height = height == undefined ? 480 : height;
-
+  constructor(id, onDraw) {
+    this.canvas = document.getElementById(id);
     this.context = this.canvas.getContext("2d");
 
-    var canva = document.getElementById(id);
-    canva.replaceWith(this.canvas);
+    this.frameNo = 0;
+    this.children = [];
+    
+    this._framerate = 20;
+    this.onDraw = onDraw;
+  }
+
+  get framerate() {
+    return this._framerate;
+  }
+
+  set framerate(val) {
+    if (val < 0) {
+      return;
+    }
+
+    this._framerate = val;
+    this.pause();
+    this.start();
   }
 
   start() {
-    this.reset();
-    this.resume();
-  }
+    if (this.interval != undefined) {
+      throw "Game is already running";
+    }
 
-  resume() {
-    this.interval = setInterval(() => this.updateGameArea(this), this.framerate);
+    this.interval = setInterval(() => this.loopGame(this), this._framerate);
   }
 
   pause() {
     clearInterval(this.interval);
+    this.interval = undefined;
   }
 
   clear() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  reset() {
-    this.pause();
-    this.components = [];
-    
-    this.onStart();
+  dispose() {
+    clearInterval(this.interval);
+    this.children = [];
+  }
 
-    var length = this.components.length;
-    for (var i=0; i<length; i++) {
-      this.components[i].parent = this;
-      this.components[i].start();
+  clearGarbage() {
+    // console.log("asdd")
+    var length = this.children.length;
+
+    for (var i = length - 1; i >= 0; i--){
+        if (!this.children[i].isDisposed()) {
+            continue;
+        }
+
+        this.children.splice(i, 1);
     }
+  }
 
-    this.updateGameArea(this)
+  printObectCount() {
+    console.log(this.children);
   }
   
-  updateGameArea(self) {
-    var length = self.components.length;
-    self.clear();
+  loopGame(self) {
+    if (this.onDraw != undefined) {
+      this.onDraw(self.frameNo);
+    }
 
+    if (this.frameNo % 50 == 0) {
+      this.printObectCount();
+    }
+
+    self.clear();
+    
+    self.clearGarbage();
+    
+    var length = self.children.length;
     for (var i=0; i<length; i++) {
-      self.components[i].newPos();
-      self.components[i].draw();
+      self.children[i].newPos();
+      self.children[i].draw();
     }
 
     self.frameNo += 1;
   }
 
-  addCompoinent(object) {
+  addComponent(object, index) {
+    index = (index==undefined) ? this.children.length : index;
+
     object.parent = this;
-    this.components.push(object);
+    // this.children.push(object);
+
+    this.children.splice(index, 0, object);
+
+    object.start();
   }
 }

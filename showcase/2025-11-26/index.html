@@ -3,26 +3,106 @@
 
 <head>
     <script src="./../../assets/canva_game.js" > </script>
+    <script src="gameplay.js" > </script> 
+    <script src="gameover.js" > </script> 
+    <script src="intro.js" > </script> 
     <script src="script.js" > </script> 
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
+        @font-face {
+            font-family: 'PixelCode';
+            src: url('./assets/fonts/PixelCode.ttf') format('truetype');
+        }
+
         canvas {
+            width: 480px;
+            height: 480px;
             border: 1px solid #d3d3d3;
             background-color: #f1f1f1;
         }
+
         button {
             min-width: 50px;
         }
+
+        table {
+            border: solid;
+        }
+
+        tr {
+            color: white;
+        }
+
+        th {
+            border: black 1px solid;
+            padding: 10px;
+            background-color: darkcyan;
+        }
+
+        td {
+            
+            padding: 10px;
+            text-align: center;
+            color: black;
+            border: black 1px solid;
+        }
+
+
     </style>
 </head>
 
-<body onload="
-    mainGame.init('main_game');
-    mainGame.start();
+<body>
+    <h3> Midterm 2 : Canva Game </h3>
 
-">
-    <h3> Galala Game </h3>
-    <canva id="main_game"> </canva>
+    <div style="display: flex;">
+        <canvas id="main_game" width="480" height="480"> </canvas>
 
+        <div style="padding-left: 10px; max-width: 420px;">
+            <h4> It's Out Of the Park </h4>
+
+            <p> 遊戲名稱 『It's Out Of the Park』 再英文中的意思是『表現得很出色！』 
+                本遊戲中你將扮演水豚君，飛上天際保護公園中的象鼩避免受到老鷹的攻擊！
+            </p>
+
+            <p> 上下左右鍵可以移動、空格建射擊、左鍵點擊來開始遊戲 </p>
+
+            <table>
+                <tr>
+                    <td colspan="4"> Console Status </td>
+                </tr>
+                <tr>
+                    <td> Score </td>
+                    <td> Lives </td>
+                    <td> Speed Factor </td>
+                    <td> Game State </td>
+                </tr>
+
+                <tr>
+                    <td id="info_score"> 0 </td>
+                    <td id="info_lives"> 3 </td>
+                    <td id="info_speed"> 1.0x </td>
+                    <td id="info_state"> Intro </td>
+                </tr>
+            </table>
+
+            <p> </p>
+
+            <table>
+                <tr>
+                    <td colspan="5"> Console Controller</td>
+                </tr>
+                <tr>
+                    <td> <button onclick="mainGame.start()"> Start </button> </td>
+                    <td> <button onclick="mainGame.pause()"> Pause </button> </td>
+                    <td> <button onclick="main()"> Reset </button> </td>
+                    <td> <button onclick="mainGame.framerate/=2"> Speed+ </button> </td>
+                    <td> <button onclick="mainGame.framerate*=2"> Speed- </button> </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    
+    
 </body>

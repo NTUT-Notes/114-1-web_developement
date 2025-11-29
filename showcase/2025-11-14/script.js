@@ -24,9 +24,17 @@ function demoGameStart() {
   lShape = new LShape(30, 90, 60, 90, "red");
   imageShape = new ImageShape(120, 120, 30, 30, SMILE)
 
-  demoGame.components.push(cubeShape);
-  demoGame.components.push(lShape);
-  demoGame.components.push(imageShape);
+  demoGame.addComponent(cubeShape);
+  demoGame.addComponent(lShape);
+  demoGame.addComponent(imageShape);
 }
 
-var demoGame = new GameController("canvas", 10, [], demoGameStart);
+var demoGame;
+
+function main() {
+  demoGame = new GameController("demo", (f) => {
+    if (f == 0) demoGameStart();
+  });
+
+  demoGame.start();
+}

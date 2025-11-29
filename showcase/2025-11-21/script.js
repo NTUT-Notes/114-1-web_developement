@@ -1,4 +1,3 @@
-
 class MovingSmile extends Component {
   constructor(x, y, width, height) {
     super(x, y, width, height);
@@ -55,12 +54,12 @@ class MovingSmile extends Component {
       image = this.angry;
     }
 
-    for (var i=0; i<this.parent.components.length; i++) {
-      if (this.parent.components[i].type != "obstacle") {
+    for (var i=0; i<this.parent.children.length; i++) {
+      if (this.parent.children[i].type != "obstacle") {
         continue;
       }
 
-      if (this.crashWith(this.parent.components[i])) {
+      if (this.crashWith(this.parent.children[i])) {
         this.speedX = 0;
         this.speedY = 0;
         image = this.crash;
@@ -93,65 +92,102 @@ class DragAndDrop extends Cube {
   }
 }
 
-function addObstacle() {
-  var width = 15 + 30 * Math.random();
-  var height = 15 + 30 * Math.random();
+class DragAndDropState {
+  static mouseDown = false;
 
-  var xPos = 480 * Math.random();
-  var yPos = 480 * Math.random();
+  static xDelta = 0;
+  static yDelta = 0;
 
-  imageGame.addComponent(new Obstacle(xPos, yPos, width, height, "red"));
-}
-
-function onImageGameStart() {
-  const count = 3;
-  for (var i=0; i<count; i++) {
-    imageGame.components.push(
-      new MovingSmile(30, 30, 30,30));
+  static onDraw(frame) {
+    if (frame == 0) {
+      DragAndDropState.setup();
+    }
   }
 
-  imageGame.components.push(new Obstacle(260, 260, 100, 20, "red"));
+  static setup() {
+    dragAndDrop.addComponent(new DragAndDrop(60, 60, 50, 50, "blue"));
 
-  setInterval(addObstacle, 2000);
+    dragAndDrop.canvas.addEventListener('mousedown', function (e) {
+
+      const rect = dragAndDrop.canvas.getBoundingClientRect();
+      var mouseX = e.clientX - rect.left;
+      var mouseY = e.clientY - rect.top;
+
+      console.log("Mouse clicked on (x=" + mouseX + "," + mouseY + ")")
+
+      var virtualObj = new Cube(mouseX ,mouseY, 1, 1, "red");
+
+      if (!virtualObj.crashWith(dragAndDrop.children[0])) return;
+
+      DragAndDropState.xDelta = mouseX - dragAndDrop.children[0].x;
+      DragAndDropState.yDelta = mouseY - dragAndDrop.children[0].y;
+
+      DragAndDropState.mouseDown = true;
+    })
+
+    dragAndDrop.canvas.addEventListener('mouseup', function (e) {
+      DragAndDropState.mouseDown = false;
+    })
+
+    dragAndDrop.canvas.addEventListener('mousemove', function (e) {
+      if (! DragAndDropState.mouseDown) return;
+
+      const rect = dragAndDrop.canvas.getBoundingClientRect();
+      var mouseX = e.clientX - rect.left;
+      var mouseY = e.clientY - rect.top;
+
+      dragAndDrop.children[0].x = mouseX - DragAndDropState.xDelta;
+      dragAndDrop.children[0].y = mouseY - DragAndDropState.yDelta;
+    })
+  }
 }
 
-var imageGame = new GameController("canvas", 10, [], onImageGameStart)
 
-imageGame.canvas.addEventListener('click', function (e) {
-  imageGame.addComponent(new Obstacle(e.pageX-20, e.pageY-70, 15, 10, "blue"));
-})
+var bouncdGame, dragAndDrop;
 
-function onDragAndDropStart() {
-  dragAndDrop.components.push(new DragAndDrop(60, 60, 15, 10, "blue"));
-}
+class ImageGameState {
 
-var dragAndDrop = new GameController("canvas", 10, [], onDragAndDropStart)
+  static setup() {
+    const count = 3;
+    for (var i=0; i<count; i++) {
+      bouncdGame.addComponent(
+        new MovingSmile(30, 30, 30,30));
+    }
 
-var mouseDown = false;
+    bouncdGame.canvas.addEventListener('click', function (e) {
+      bouncdGame.addComponent(new Obstacle(e.pageX-20, e.pageY-70, 15, 10, "blue"));
+    })
 
-dragAndDrop.canvas.addEventListener('mousedown', function (e) {
-  var mouseX = e.clientX - 20;
-  var mouseY = e.clientY - 380;
+    bouncdGame.addComponent(new Obstacle(260, 260, 100, 20, "red"));
+  }
 
-  var virtualObj = new Cube(mouseX+5 ,mouseY+5, 1, 1, "red");
+  static _drawAddObstacle() {
+    var width = 15 + 30 * Math.random();
+    var height = 15 + 30 * Math.random();
 
-  if (!virtualObj.crashWith(dragAndDrop.components[0])) return;
+    var xPos = 480 * Math.random();
+    var yPos = 480 * Math.random();
 
-  mouseDown = true;
-})
-
-dragAndDrop.canvas.addEventListener('mouseup', function (e) {
-  mouseDown = false;
-})
-
-dragAndDrop.canvas.addEventListener('mousemove', function (e) {
-  if (! mouseDown) return;
-
-  var mouseX = e.clientX - 20;
-  var mouseY = e.clientY - 380;
-
+    bouncdGame.addComponent(new Obstacle(xPos, yPos, width, height, "red"));
+  }
   
+  static onDraw(frame) {
+    if (frame == 0) {
+      ImageGameState.setup();
+    }
 
-  dragAndDrop.components[0].x = mouseX;
-  dragAndDrop.components[0].y = mouseY;
-})
+    if (frame % 100 == 0) {
+      ImageGameState._drawAddObstacle();
+    }
+  }
+}
+
+function main() {
+  bouncdGame = new GameController("image_game", ImageGameState.onDraw);
+  bouncdGame.start();
+
+  dragAndDrop = new GameController("drag_and_drop", DragAndDropState.onDraw)
+  dragAndDrop.start();
+}
+
+window.onload = main

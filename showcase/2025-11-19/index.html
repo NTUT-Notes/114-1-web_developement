@@ -17,20 +17,15 @@
     </style>
 </head>
 
-<body onload="
-    handGame.init('hand_game'); 
-    imageGame.init('image_game');
-    imageGame.start()
-">
+<body>
     <h3> Image Bounce Game </h3>
-    <canva id="image_game"> </canva>
+    <canvas id="image_game" width="480" height="480"> </canvas>
 
     <h3> Paper, Rock, Scissors Simulator</h3>
-    <canva id="hand_game"> </canva>
+    <canvas id="hand_game" width="480" height="480"> </canvas>
     
     <h4> Controller</h4>
     <button onclick="handGame.start()"> Start </button>
     <button onclick="handGame.pause()"> Pause </button>
-    <button onclick="handGame.resume()"> Resume </button>
-    <button onclick="handGame.reset()"> Reset </button>
+    <button onclick="reset()"> Reset </button>
 </body>

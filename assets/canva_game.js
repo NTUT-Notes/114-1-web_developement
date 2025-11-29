@@ -224,104 +224,6 @@ class ImageShape extends Component {
 
 }
 
-class HandGame extends Component {
-  constructor(x, y, width, height, type) {
-    super(x, y, width, height);
-
-    this.paper = new Image();
-    this.paper.src = 'https://em-content.zobj.net/source/apple/81/page-facing-up_1f4c4.png';
-
-    this.scissors = new Image();
-    this.scissors.src = 'https://symbl-cdn.com/i/webp/c4/aa8b2a5d6d7304241d56de9f82e3d9.webp';
-
-    this.stone = new Image();
-    this.stone.src = 'https://symbl-cdn.com/i/webp/f2/0e29d778af528ff18585b3c4088835.webp';
-
-    this.type = type;
-  }
-
-  start() {
-    var rand;
-    rand = (Math.random() - 0.5 > 0) ? 1 : -1; 
-    this.speedX = (1 + 1 * Math.random()) * rand;
-
-    rand = (Math.random() - 0.5 > 0) ? 1 : -1;
-    this.speedY = (1 + 1 * Math.random()) * rand;
-  }
-
-  calcNewType(other) {
-    if (this.type == "scissors" && other.type == "stone") {
-      return "stone";
-    }
-
-    if (this.type == "paper" && other.type == "scissors") {
-      return "scissors";
-    }
-
-    if (this.type == "stone" && other.type == "paper") {
-      return "paper";
-    }
-
-    return this.type;
-  }
-
-  draw() {
-    var ctx = this.parent.canvas.getContext("2d");
-    var frame = this.parent.frameNo;
-
-    var image;
-    
-    var collusion = this.checkHitBound();
-
-
-    // Handle in bound 
-    switch (collusion) {
-      case Bound.Top:
-        this.speedY = Math.abs(this.speedY);
-        break;
-      case Bound.Bottom:
-        this.speedY = -Math.abs(this.speedY);
-        break;
-
-      case Bound.Left:
-        this.speedX = Math.abs(this.speedX);
-        break;
-      case Bound.Right:
-        this.speedX = -Math.abs(this.speedX);
-        break;
-    }
-
-    // Handle win or lose
-    for (var i=0; i<this.parent.components.length; i++) {
-      if (this.parent.components[i] == this) {
-        continue;
-      }
-
-      if (!this.crashWith(this.parent.components[i])) {
-        continue;
-      }
-
-      this.type = this.calcNewType(this.parent.components[i]);
-    }
-
-    if (this.type == "paper") {
-      image = this.paper;
-    } else if ( this.type == "scissors" ) {
-      image = this.scissors;
-    } else if ( this.type == "stone" ){
-      image = this.stone;
-    }
-
-    ctx.drawImage(
-      image, 
-      this.x, 
-      this.y,
-      this.width, 
-      this.height
-    );
-  }
-}
-
 class GameController {
   constructor(id, onDraw) {
     this.canvas = document.getElementById(id);
@@ -383,18 +285,18 @@ class GameController {
     }
   }
 
-  printObectCount() {
-    console.log(this.children);
-  }
+  // printObectCount() {
+  //   console.log(this.children);
+  // }
   
   loopGame(self) {
     if (this.onDraw != undefined) {
       this.onDraw(self.frameNo);
     }
 
-    if (this.frameNo % 50 == 0) {
-      this.printObectCount();
-    }
+    // if (this.frameNo % 50 == 0) {
+    //   this.printObectCount();
+    // }
 
     self.clear();
     
